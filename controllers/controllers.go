@@ -51,6 +51,11 @@ func CriaNovoAluno(c *gin.Context) {
 			"Error": err.Error()})
 		return
 	}
+	if err := models.ValidaDados(&aluno); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Error": err.Error()})
+		return
+	}
 	database.DB.Create(&aluno)
 	c.JSON(http.StatusOK, aluno)
 
@@ -62,6 +67,11 @@ func AtualizaAlunos(c *gin.Context) {
 	database.DB.First(&aluno, id)
 
 	if err := c.ShouldBindJSON(&aluno); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Error": err.Error()})
+		return
+	}
+	if err := models.ValidaDados(&aluno); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"Error": err.Error()})
 		return
@@ -83,4 +93,17 @@ func BuscaAlunoCPF(c *gin.Context) {
 
 	c.JSON(http.StatusOK, aluno)
 
+}
+
+func RenderizaPaginaIndex(c *gin.Context) {
+	var alunos []models.Aluno
+	database.DB.Find(&alunos)
+
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"alunos": alunos,
+	})
+}
+
+func RotaNaoEncontrada(c *gin.Context) {
+	c.HTML(http.StatusNotFound, "404.html", nil)
 }
